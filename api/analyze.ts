@@ -49,32 +49,26 @@ export default async function handler(req: any, res: any) {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         const apiKey = apiKeys[currentKeyIndex];
-        const genAI = new GoogleGenAI(apiKey);
+        const ai = new GoogleGenAI({ apiKey });
 
         try {
-            const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
-                systemInstruction: TCM_SYSTEM_INSTRUCTION,
-            });
-
-            const result = await model.generateContent({
-                contents: [
-                    {
-                        role: "user",
-                        parts: [
-                            {
-                                inlineData: {
-                                    mimeType: "image/jpeg",
-                                    data: image,
-                                },
+            const response = await ai.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: {
+                    parts: [
+                        {
+                            inlineData: {
+                                mimeType: 'image/jpeg',
+                                data: image,
                             },
-                            {
-                                text: "请分析这张舌头照片，并按照约定的JSON格式输出中医诊断结果。",
-                            },
-                        ],
-                    },
-                ],
-                generationConfig: {
+                        },
+                        {
+                            text: "请分析这张舌头照片，并按照约定的JSON格式输出中医诊断结果。",
+                        },
+                    ],
+                },
+                config: {
+                    systemInstruction: TCM_SYSTEM_INSTRUCTION,
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
@@ -101,8 +95,8 @@ export default async function handler(req: any, res: any) {
                 }
             });
 
-            const response = await result.response;
-            const text = response.text();
+            const text = response.text;
+            if (!text) throw new Error("无法获取分析结果");
 
             return res.status(200).json(JSON.parse(text));
         } catch (error: any) {
