@@ -1,0 +1,7 @@
+{
+  "name": "中医舌诊 AI 助手",
+  "description": "基于传统中医理论与 Gemini AI 技术的智能舌象分析工具，提供便捷的健康自我检测参考。",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
