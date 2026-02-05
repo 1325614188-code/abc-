@@ -14,8 +14,24 @@ const TCM_SYSTEM_INSTRUCTION = `你是一位拥有30年临床经验的高级中�
 
 // 获取 API Key 列表
 const getApiKeys = (): string[] => {
+  const keys: string[] = [];
+
+  // 1. 检查逗号分隔的格式 (GEMINI_API_KEYS)
   const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || process.env.API_KEY || "";
-  return keysStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
+  if (keysStr) {
+    keys.push(...keysStr.split(',').map(k => k.trim()).filter(k => k.length > 0));
+  }
+
+  // 2. 检查编号格式 (GEMINI_API_KEY_1, GEMINI_API_KEY_2...)
+  // 自动查找最多前 100 个
+  for (let i = 1; i <= 100; i++) {
+    const key = process.env[`GEMINI_API_KEY_${i}`];
+    if (key && !keys.includes(key.trim())) {
+      keys.push(key.trim());
+    }
+  }
+
+  return keys;
 };
 
 // 当前使用的 Key 索引
